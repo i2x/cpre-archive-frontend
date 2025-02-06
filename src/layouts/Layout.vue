@@ -55,7 +55,7 @@
 
 <script>
 import { GoogleLogin } from 'vue3-google-login';
-import axios from 'axios';
+import api from '@/utils/api'; 
 
 export default {
     components: { GoogleLogin },
@@ -70,6 +70,9 @@ export default {
     computed: {
         isDebugMode() {
             return import.meta.env.VITE_MODE_DEBUG === 'true';
+        },
+        testEmail() {
+            return import.meta.env.VITE_TEST_EMAIL || "default@example.com";
         }
     },
 
@@ -78,7 +81,7 @@ export default {
         async handleGoogleLogin(response) {
             try {
                 const token = response.credential;
-                const res = await axios.post('http://127.0.0.1:8000/api/google-login/', { token });
+                const res = await api.post('google-login/', { token }); // Use API instance
 
                 localStorage.setItem('access_token', res.data.access);
                 localStorage.setItem('refresh_token', res.data.refresh);
@@ -87,21 +90,19 @@ export default {
 
                 this.showLogin = false;
             } catch (error) {
-                console.error('Login failed:', error);
+                console.error('❌ Login failed:', error);
             }
         },
 
         // ✅ Get Token by Email (For Testing in DEBUG Mode)
         async getTokenByEmail() {
-            if (import.meta.env.VITE_MODE_DEBUG !== 'true') {
+            if (!this.isDebugMode) {
                 console.warn('❌ DEBUG mode is disabled. getTokenByEmail() is not allowed.');
                 return;
             }
 
-            const testEmail = import.meta.env.VITE_TEST_EMAIL || "default@example.com"; // Fallback email
-
             try {
-                const res = await axios.post('http://127.0.0.1:8000/api/get-token/', { email: testEmail });
+                const res = await api.post('get-token/', { email: this.testEmail }); // Use API instance
 
                 localStorage.setItem('access_token', res.data.access_token);
                 localStorage.setItem('refresh_token', res.data.refresh_token);
@@ -122,10 +123,6 @@ export default {
             this.user = null;
             window.location.href = '/'; // Reloads the entire page
         }
-    },
-
-
-
-
+    }
 };
 </script>
