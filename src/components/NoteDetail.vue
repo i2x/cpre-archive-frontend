@@ -3,18 +3,27 @@
       <div class="d-flex align-items-center">
         <div class="me-3">
           <strong>{{ note.name }}</strong> <br />
+
           <small class="text-muted">Owned by: <em>{{ note.user }}</em></small> <br />
+
+          <code>{{ note.course }}</code> <br />
+
+
+
+          
           
           <!-- Display tags -->
-          <small
+          <span
             v-for="(tag, index) in note.tags.split(',')"
             :key="index"
-            class="badge bg-info text-dark me-1"
+            class="badge bg-primary me-1"
             style="cursor: pointer;"
             @click="searchByTag(tag.trim())"
           >
-            📌 {{ tag.trim() }}
-          </small>
+
+          <i class="bi bi-bookmarks-fill"></i>
+                    {{ tag.trim() }}
+        </span>
           
           <!-- Show budget if available -->
           <small v-if="note.budget" class="badge bg-success ms-2">
