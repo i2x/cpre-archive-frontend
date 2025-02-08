@@ -69,7 +69,7 @@ export default {
 
     computed: {
         isDebugMode() {
-            return import.meta.env.VITE_MODE_DEBUG === 'true';
+            return import.meta.env.VITE_DEBUG_MODE === 'true';
         },
         testEmail() {
             return import.meta.env.VITE_TEST_EMAIL || "default@example.com";
