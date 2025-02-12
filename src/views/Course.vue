@@ -1,149 +1,114 @@
 <template>
-    <div id="curriculum-flow">
-      <h1>Course Schedule</h1>
-      <div class="tabs">
-        <button
-          v-for="tab in tabs"
-          :key="tab.name"
-          :class="['tab-button', { active: activeTab === tab.name }]"
-          @click="activeTab = tab.name"
-        >
-          {{ tab.label }}
-        </button>
-      </div>
-  
-      <!-- Select Year Filter -->
-      <div v-if="activeTab === 'schedule'" class="filter-container">
-        <label for="year-filter">Filter by Year:</label>
-        <select id="year-filter" v-model="selectedYear">
-          <option value="">All Years</option>
-          <option v-for="year in availableYears" :key="year" :value="year">
-            Year {{ year }}
-          </option>
-        </select>
-      </div>
-  
-      <!-- Tab: Schedule -->
-      <div v-if="activeTab === 'schedule'" class="tab-content">
-        <div class="horizontal-container">
-          <div
-            v-for="(term, index) in filteredCourses"
-            :key="index"
-            class="term-column"
-          >
-            <h2 class="term-header">Year {{ term.year }}, Term {{ term.term }}</h2>
-            <div
-              v-for="course in term.courses"
-              :key="course.id"
-              class="course-card"
-              @click="showCourseDetail(course)"
-            >
-              <div class="course-code">{{ course.id }}</div>
-              <div class="course-name">{{ course.name }}</div>
-            </div>
-          </div>
+    <div class="container">
+      <h1>Manage Courses</h1>
+      <div class="table-wrapper">
+        <div class="table-responsive" style="width: 800px;">
+          <table class="table table-bordered table-sm text-center align-middle small">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 20%">ID</th>
+                <th style="width: 60%">Course Name</th>
+                <th style="width: 20%">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <input v-model="newCourse.id" type="text" class="form-control form-control-sm" placeholder="Enter course ID" />
+                </td>
+                <td>
+                  <input v-model="newCourse.name" type="text" class="form-control form-control-sm" placeholder="Enter course name" />
+                </td>
+                <td>
+                  <button class="btn btn-success btn-sm" @click="addCourse">
+                    <i class="bi bi-plus-circle"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr v-for="(course, index) in courses" :key="course.id">
+                <td>
+                  <template v-if="course.isEditing">
+                    <input v-model="course.tempId" type="text" class="form-control form-control-sm" />
+                  </template>
+                  <template v-else>
+                    {{ course.id }}
+                  </template>
+                </td>
+                <td>
+                  <template v-if="course.isEditing">
+                    <input v-model="course.tempName" type="text" class="form-control form-control-sm" />
+                  </template>
+                  <template v-else>
+                    {{ course.name }}
+                  </template>
+                </td>
+                <td>
+                  <template v-if="course.isEditing">
+                    <button class="btn btn-primary btn-sm" @click="saveEdit(course)">
+                      <i class="bi bi-check-circle"></i>
+                    </button>
+                    <button class="btn btn-secondary btn-sm ms-1" @click="cancelEdit(course)">
+                      <i class="bi bi-x-circle"></i>
+                    </button>
+                  </template>
+                  <template v-else>
+                    <button class="btn btn-warning btn-sm" @click="editCourse(course)">
+                      <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm ms-1" @click="removeCourse(course.id)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </template>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </div>
-  
-      <!-- Tab: Course Notes -->
-      <div v-if="activeTab === 'courseNotes'" class="tab-content">
-        <h2>{{ selectedCourse?.name }}</h2>
-        <div v-if="loadingNotes" class="loading">Loading notes...</div>
-        <div v-else-if="notes.length === 0" class="alert alert-warning">
-          No notes found for this course.
-        </div>
-        <ul v-else class="list-group">
-          <NoteDetail v-for="note in notes" :key="note.id" :note="note" />
-        </ul>
-        <button class="btn btn-secondary mt-3" @click="backToSchedule">
-          Back to Schedule
-        </button>
       </div>
     </div>
   </template>
   
   <script>
-  import axios from "axios";
-  import NoteDetail from "@/components/NoteDetail.vue";
-  
   export default {
-    name: "CurriculumComponent",
-    components: { NoteDetail },
     data() {
       return {
-        tabs: [
-          { name: "schedule", label: "Schedule" },
-          { name: "courseNotes", label: "Course Notes" },
+        courses: [
+          { id: "CS101", name: "Introduction to Computer Science", isEditing: false },
+          { id: "CS102", name: "Data Structures and Algorithms", isEditing: false },
+          { id: "SE201", name: "Software Engineering Principles", isEditing: false }
         ],
-        activeTab: "schedule",
-        courses: [],
-        selectedCourse: null,
-        notes: [],
-        loadingNotes: false,
-        selectedYear: "", // Selected year for filtering
+        newCourse: { id: "", name: "" }
       };
     },
-    computed: {
-      groupedCourses() {
-        const groups = [];
-        this.courses.forEach((course) => {
-          let group = groups.find(
-            (g) => g.year === course.year && g.term === course.term
-          );
-          if (!group) {
-            group = { year: course.year, term: course.term, courses: [] };
-            groups.push(group);
-          }
-          group.courses.push(course);
-        });
-        return groups.sort((a, b) => a.year - b.year || a.term - b.term);
-      },
-      filteredCourses() {
-        if (!this.selectedYear) {
-          return this.groupedCourses;
-        }
-        return this.groupedCourses.filter((group) => group.year === Number(this.selectedYear));
-      },
-      availableYears() {
-        return [...new Set(this.courses.map((course) => course.year))];
-      },
-    },
     methods: {
-      async fetchCurriculum() {
-        try {
-          const response = await axios.get("http://127.0.0.1:8000/api/curriculum/");
-          this.courses = response.data.courses;
-        } catch (error) {
-          console.error("Error fetching curriculum:", error);
-          alert("Error fetching curriculum data.");
-        }
+      addCourse() {
+        if (!this.newCourse.id.trim() || !this.newCourse.name.trim()) return;
+        this.courses.unshift({ 
+          id: this.newCourse.id.trim(), 
+          name: this.newCourse.name.trim(), 
+          isEditing: false 
+        });
+        this.newCourse = { id: "", name: "" };
       },
-      async showCourseDetail(course) {
-        this.selectedCourse = course;
-        this.activeTab = "courseNotes";
-        this.loadingNotes = true;
-  
-        try {
-          const response = await axios.get("http://127.0.0.1:8000/api/notes/search/", {
-            params: { q: course.name, field: "course__name" }, // Search by course name
-          });
-          this.notes = response.data.results;
-        } catch (error) {
-          console.error("Error fetching notes:", error);
-          alert("Error fetching course notes.");
-        } finally {
-          this.loadingNotes = false;
-        }
+      editCourse(course) {
+        course.isEditing = true;
+        course.tempId = course.id;
+        course.tempName = course.name;
       },
-      backToSchedule() {
-        this.activeTab = "schedule";
-        this.selectedCourse = null;
-        this.notes = [];
+      cancelEdit(course) {
+        course.isEditing = false;
       },
-    },
-    mounted() {
-      this.fetchCurriculum();
+      saveEdit(course) {
+        course.id = course.tempId.trim();
+        course.name = course.tempName.trim();
+        course.isEditing = false;
+      },
+      removeCourse(id) {
+        if (!confirm("Are you sure you want to delete this course?")) return;
+        this.courses = this.courses.filter(course => course.id !== id);
+      }
     }
   };
   </script>
   
+

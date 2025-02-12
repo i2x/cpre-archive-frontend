@@ -8,8 +8,10 @@
 
             <div class="nav-links">
                 <router-link to="/" class="nav-item" exact-active-class="active">Search</router-link>
-                <router-link to="/course" class="nav-item" exact-active-class="active">Course</router-link>
+                <router-link to="/curriculum" class="nav-item" exact-active-class="active">Curriculum</router-link>
                 <router-link v-if="user" to="/notes" class="nav-item" exact-active-class="active">Notes</router-link>
+                <router-link v-if="user" to="/course" class="nav-item" exact-active-class="active">Course</router-link>
+
             </div>
 
             <!-- 🌟 Auth Section -->

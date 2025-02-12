@@ -115,10 +115,4 @@
   };
   </script>
   
-  <style>
-  .table-wrapper {
-    max-height: 500px;
-    overflow-y: auto;
-  }
-  </style>
-  
+
