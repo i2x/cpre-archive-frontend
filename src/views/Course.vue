@@ -96,7 +96,7 @@ export default {
     async addCourse() {
       if (!this.newCourse.id.trim() || !this.newCourse.name.trim()) return;
       try {
-        const response = await api.post("courses/create/", this.newCourse);
+        const response = await api.post("courses/", this.newCourse);
         this.courses.unshift({ 
           ...response.data.course, 
           isEditing: false 
