@@ -83,7 +83,7 @@ export default {
         async handleGoogleLogin(response) {
             try {
                 const token = response.credential;
-                const res = await api.post('google-login/', { token }); // Use API instance
+                const res = await api.post('auth/google/', { token }); // Use API instance
 
                 localStorage.setItem('access_token', res.data.access);
                 localStorage.setItem('refresh_token', res.data.refresh);
@@ -104,7 +104,7 @@ export default {
             }
 
             try {
-                const res = await api.post('get-token/', { email: this.testEmail }); // Use API instance
+                const res = await api.post('auth/token/', { email: this.testEmail }); // Use API instance
 
                 localStorage.setItem('access_token', res.data.access_token);
                 localStorage.setItem('refresh_token', res.data.refresh_token);
