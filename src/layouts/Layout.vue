@@ -18,7 +18,13 @@
             <div class="auth-section">
                 <template v-if="user">
                     <!-- ✅ Display Profile Picture -->
-                    <img :src="`${user.picture}?sz=200`" alt="User Profile" class="profile-picture" />
+                    <!-- <img :src="`${user.picture}?sz=200`" alt="User Profile" class="profile-picture" /> -->
+
+                    <img :src="user.picture ? `${user.picture}?sz=200` : '/public/defult.jpeg'" 
+     @error="setDefaultImage" 
+     alt="User Profile" 
+     class="profile-picture" />
+
 
                     <!-- ✅ Display User username -->
                     <span class="username"> {{ user.username }}</span>
