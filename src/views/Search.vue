@@ -33,7 +33,8 @@
   <script>
   import axios from "axios";
   import NoteDetail from "@/components/NoteDetail.vue";
-  
+  import api from "@/utils/api.js";
+
   export default {
     components: { NoteDetail },
     data() {
@@ -53,7 +54,7 @@
         }
   
         try {
-          const response = await axios.get("http://127.0.0.1:8000/api/notes/search/", {
+          const response = await api.get("notes/search/", {
             params: { q: this.query, field: this.selectedField },
           });
           this.files = response.data.results;

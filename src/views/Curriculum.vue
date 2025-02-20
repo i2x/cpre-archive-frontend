@@ -65,6 +65,8 @@
   <script>
   import axios from "axios";
   import NoteDetail from "@/components/NoteDetail.vue";
+  import api from "@/utils/api.js";
+
   
   export default {
     name: "CurriculumComponent",
@@ -111,7 +113,7 @@
     methods: {
       async fetchCurriculum() {
         try {
-          const response = await axios.get("http://127.0.0.1:8000/api/curriculum/");
+          const response = await api.get("curriculum/");
           this.courses = response.data.courses;
         } catch (error) {
           console.error("Error fetching curriculum:", error);
@@ -124,7 +126,7 @@
         this.loadingNotes = true;
   
         try {
-          const response = await axios.get("http://127.0.0.1:8000/api/notes/search/", {
+          const response = await api.get("notes/search/", {
             params: { q: course.name, field: "course__name" }, // Search by course name
           });
           this.notes = response.data.results;
